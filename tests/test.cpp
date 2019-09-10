@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <boost/regex.hpp>
+#include "BrokerResolver.h"
 
 TEST(Test, Test)
 {
@@ -9,5 +10,15 @@ TEST(Test, Test)
     EXPECT_EQ(
         static_cast<bool>(boost::regex_match(tester, r)),
         true
+    );
+}
+
+TEST(Test, Test1)
+{
+    BrokerData::Pair::Hash{}(
+        BrokerData::Pair{
+            "a", 1
+
+        }
     );
 }
