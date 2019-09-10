@@ -18,24 +18,30 @@ HunterGate(
   SHA1 "e14bc153a7f16d6a5eeec845fb0283c8fad8c358"
 )
 
-project(PROJECTNAME)    # TODO
+project(Filesystem)
 string(APPEND CMAKE_CXX_FLAGS " -pedantic -Werror -Wall -Wextra")
 string(APPEND CMAKE_CXX_FLAGS " -Wno-unused-command-line-argument")
 string(APPEND CMAKE_CXX_FLAGS " -Wshadow -Wnon-virtual-dtor")
 
 hunter_add_package(GTest)
+hunter_add_package(Boost COMPONENTS filesystem regex)
 find_package(GTest CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED filesystem regex)
 find_package(Threads)
 
-add_library(
+add_executable(
   ${PROJECT_NAME}
-  STATIC
-  # TODO
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/main.cpp
+)
+target_link_libraries(
+  ${PROJECT_NAME}
+  Boost::filesystem
+  Boost::regex
 )
 
 add_executable(
   tests
-  # TODO
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp
 )
 
 target_include_directories(
@@ -66,7 +72,8 @@ target_link_libraries(
   ${CMAKE_THREAD_LIBS_INIT}
   ${GTEST_LOCAL_LIB}
   ${GTEST_LOCAL_LIB_MAIN}
-  ${PROJECT_NAME}
+  Boost::filesystem
+  Boost::regex
 )
 
 enable_testing()
