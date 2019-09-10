@@ -1,24 +1,182 @@
 #include <gtest/gtest.h>
-#include <boost/regex.hpp>
 #include "BrokerResolver.h"
 
-TEST(Test, Test)
+TEST(BrokerFile, DirectoriesToString)
 {
-    boost::regex r{R"((\w+)_(\d{8})_([12]\d{3}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])).(\w+))"};
-    std::string tester{"builder_12345678_20190504.txt"};
+    BrokerFile brokerFile{
+        "filename",
+        {"dir1", "dir2"}
+    };
 
-    EXPECT_EQ(
-        static_cast<bool>(boost::regex_match(tester, r)),
-        true
+    EXPECT_EQ(brokerFile.directoriesToString(), "dir1 dir2");
+}
+
+TEST(BrokerFile, Equal)
+{
+    BrokerFile brokerFile{
+        "filename",
+        {"dir1", "dir2"}
+    };
+    BrokerFile equalBrokerFile{
+        "filename",
+        {"dir1", "dir2"}
+    };
+    BrokerFile notEqualBrokerFile{
+        "filename",
+        {"dir1", "dir2", "dir3"}
+    };
+
+    EXPECT_EQ(brokerFile, equalBrokerFile);
+    EXPECT_EQ(brokerFile == notEqualBrokerFile, false);
+}
+
+TEST(BrokerDataPair, Equal)
+{
+    BrokerData::Pair pair{"broker", 500};
+    BrokerData::Pair equalPair{"broker", 500};
+    BrokerData::Pair notEqualPair{"_____", 500};
+
+    EXPECT_EQ(pair, equalPair);
+    EXPECT_EQ(pair == notEqualPair, false);
+}
+
+TEST(BrokerDataPair, Hash)
+{
+    BrokerData::Pair pair{"broker", 500};
+    size_t hash = BrokerData::Pair::Hash{}(pair);
+
+    EXPECT_NE(hash, 0);
+}
+
+TEST(BrokerResolver, TestGetFiles)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+
+    auto files = resolver.getFileCollection();
+
+    EXPECT_NE(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001234_20181001.txt",
+                {"dir"}
+            }
+        ),
+        files.cend()
+    );
+    EXPECT_NE(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001234_20181007.txt",
+                {"dir"}
+            }
+        ),
+        files.cend()
     );
 }
 
-TEST(Test, Test1)
+TEST(BrokerResolver, TestGetFilesNestedDir)
 {
-    BrokerData::Pair::Hash{}(
-        BrokerData::Pair{
-            "a", 1
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
 
-        }
+    auto files = resolver.getFileCollection();
+
+    EXPECT_NE(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001234_20181005.txt",
+                {"dir", "nested_dir"}
+            }
+        ),
+        files.cend()
+    );
+}
+
+TEST(BrokerResolver, TestGetFilesSymlinkFile)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+
+    auto files = resolver.getFileCollection();
+
+    EXPECT_NE(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001234_20181010.txt",
+                {"dir"}
+            }
+        ),
+        files.cend()
+    );
+}
+
+TEST(BrokerResolver, TestGetFilesSymlinkDir)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+
+    auto files = resolver.getFileCollection();
+
+    EXPECT_NE(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001234_20181001.txt",
+                {"new_dir"}
+            }
+        ),
+        files.cend()
+    );
+    EXPECT_NE(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001234_20181007.txt",
+                {"new_dir"}
+            }
+        ),
+        files.cend()
+    );
+}
+
+TEST(BrokerResolver, TestGetFilesNoOld)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+
+    auto files = resolver.getFileCollection();
+
+    EXPECT_EQ(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001235_20190505.old.txt",
+                {"dir"}
+            }
+        ),
+        files.cend()
+    );
+    EXPECT_EQ(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001235_20190505.old.txt",
+                {"new_dir"}
+            }
+        ),
+        files.cend()
     );
 }
