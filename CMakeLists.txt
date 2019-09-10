@@ -29,7 +29,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(Boost CONFIG REQUIRED filesystem regex)
 find_package(Threads)
 
-add_executable(
+add_library(
   ${PROJECT_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/sources/BrokerResolver.cpp
@@ -39,6 +39,16 @@ target_link_libraries(
   Boost::filesystem
   Boost::regex
 )
+
+add_executable(
+  ${PROJECT_NAME}Demo
+  ${CMAKE_CURRENT_SOURCE_DIR}/sources/main.cpp
+)
+target_link_libraries(
+  ${PROJECT_NAME}Demo
+  ${PROJECT_NAME}
+)
+
 
 add_executable(
   tests
@@ -73,8 +83,7 @@ target_link_libraries(
   ${CMAKE_THREAD_LIBS_INIT}
   ${GTEST_LOCAL_LIB}
   ${GTEST_LOCAL_LIB_MAIN}
-  Boost::filesystem
-  Boost::regex
+  ${PROJECT_NAME}
 )
 
 enable_testing()
@@ -85,6 +94,7 @@ if (BUILD_COVERAGE)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
   find_package(codecov)
   add_coverage(${PROJECT_NAME})
+  add_coverage(${PROJECT_NAME}Demo)
   add_coverage(tests)
   list(APPEND LCOV_REMOVE_PATTERNS "'${PROJECT_SOURCE_DIR}/tests/*'")
   coverage_evaluate()

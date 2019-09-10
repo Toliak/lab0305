@@ -11,13 +11,11 @@ struct BrokerFile
     std::string filename;
     DirsType directories;
 
-    [[nodiscard]] std::string directoriesToString() const
+    [[nodiscard]] std::string directoriesToString() const;
+
+    bool operator==(const BrokerFile &pair) const
     {
-        std::string result;
-        for (const std::string &dir : directories) {
-            result += dir + " ";
-        }
-        return result.substr(0, result.size() - 1);
+        return pair.filename == filename && pair.directories == directories;
     }
 };
 
@@ -55,9 +53,6 @@ public:
     using Collection = std::forward_list<BrokerFile>;
     using DataCollection = std::unordered_map<BrokerData::Pair, BrokerData::Data, BrokerData::Pair::Hash>;
     static boost::regex filenameChecker;
-
-    // Рекурсивный резольвер симлинков
-    static boost::filesystem::path resolveIfSymlink(const boost::filesystem::path &path);
 
     // Запомнить информацию о файле, если он удовлетворяет условию
     void saveFileIfCorrect(const boost::filesystem::path &path);

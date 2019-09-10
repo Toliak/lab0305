@@ -10,22 +10,20 @@ void setIfMore(T &oldValue, const T &newValue)
     }
 }
 
-boost::filesystem::path BrokerResolver::resolveIfSymlink(const boost::filesystem::path &path)
+std::string BrokerFile::directoriesToString() const
 {
-    if (!boost::filesystem::is_symlink(path)) {
-        return path;
+    std::string result;
+    for (const std::string &dir : directories) {
+        result += dir + " ";
     }
-
-    return resolveIfSymlink(
-        boost::filesystem::read_symlink(path)
-    );
+    return result.substr(0, result.size() - 1);
 }
 
 void BrokerResolver::saveFileIfCorrect(const boost::filesystem::path &path)
 {
     std::string filename = path.filename().string();
     boost::smatch result;
-    if (!boost::regex_match(filename, result, filenameChecker)) {
+    if (filename.find(".old") != std::string::npos || !boost::regex_match(filename, result, filenameChecker)) {
         return;
     }
 
@@ -47,13 +45,14 @@ void BrokerResolver::saveFileIfCorrect(const boost::filesystem::path &path)
 void BrokerResolver::resolve(const boost::filesystem::path &path)
 {
     for (const boost::filesystem::directory_entry &entry : boost::filesystem::directory_iterator{path}) {
+        boost::filesystem::path resolved = boost::filesystem::canonical(entry);
 
-        if (boost::filesystem::is_directory(resolveIfSymlink(entry))) {
+        if (boost::filesystem::is_directory(resolved)) {
             currentDirectories.push_back(
-                boost::filesystem::path{entry}.stem().string()
+                boost::filesystem::path{entry}.stem().string()          // save origin name
             );
-            resolve(entry);
-        } else if (boost::filesystem::is_regular_file(entry)) {
+            resolve(resolved);
+        } else if (boost::filesystem::is_regular_file(resolved)) {
             saveFileIfCorrect(entry);
         }
     }
