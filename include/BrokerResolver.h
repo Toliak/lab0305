@@ -54,6 +54,14 @@ public:
     using DataCollection = std::unordered_map<BrokerData::Pair, BrokerData::Data, BrokerData::Pair::Hash>;
     static boost::regex filenameChecker;
 
+    template<typename T>
+    static void setIfMore(T &oldValue, const T &newValue)
+    {
+        if (oldValue < newValue) {
+            oldValue = newValue;
+        }
+    }
+
     // Запомнить информацию о файле, если он удовлетворяет условию
     void saveFileIfCorrect(const boost::filesystem::path &path);
 

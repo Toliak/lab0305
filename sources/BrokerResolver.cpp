@@ -2,14 +2,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-template<typename T>
-void setIfMore(T &oldValue, const T &newValue)
-{
-    if (oldValue < newValue) {
-        oldValue = newValue;
-    }
-}
-
 std::string BrokerFile::directoriesToString() const
 {
     std::string result;

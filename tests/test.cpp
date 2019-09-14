@@ -48,7 +48,7 @@ TEST(BrokerDataPair, Hash)
     EXPECT_NE(hash, 0);
 }
 
-TEST(BrokerResolver, TestGetFiles)
+TEST(BrokerResolver, GetFiles)
 {
     BrokerResolver resolver{};
     resolver.resolve("../tests/data");
@@ -79,7 +79,7 @@ TEST(BrokerResolver, TestGetFiles)
     );
 }
 
-TEST(BrokerResolver, TestGetFilesNestedDir)
+TEST(BrokerResolver, GetFilesNestedDir)
 {
     BrokerResolver resolver{};
     resolver.resolve("../tests/data");
@@ -99,7 +99,7 @@ TEST(BrokerResolver, TestGetFilesNestedDir)
     );
 }
 
-TEST(BrokerResolver, TestGetFilesSymlinkFile)
+TEST(BrokerResolver, GetFilesSymlinkFile)
 {
     BrokerResolver resolver{};
     resolver.resolve("../tests/data");
@@ -119,7 +119,7 @@ TEST(BrokerResolver, TestGetFilesSymlinkFile)
     );
 }
 
-TEST(BrokerResolver, TestGetFilesSymlinkDir)
+TEST(BrokerResolver, GetFilesSymlinkDir)
 {
     BrokerResolver resolver{};
     resolver.resolve("../tests/data");
@@ -150,7 +150,7 @@ TEST(BrokerResolver, TestGetFilesSymlinkDir)
     );
 }
 
-TEST(BrokerResolver, TestGetFilesNoOld)
+TEST(BrokerResolver, GetFilesNoOld)
 {
     BrokerResolver resolver{};
     resolver.resolve("../tests/data");
@@ -179,4 +179,57 @@ TEST(BrokerResolver, TestGetFilesNoOld)
         ),
         files.cend()
     );
+}
+
+TEST(BrokerResolver, SetIfMore)
+{
+    int left = 9;
+    BrokerResolver::setIfMore(left, 10);
+    EXPECT_EQ(left, 10);
+}
+
+TEST(BrokerResolver, SetIfMoreBad)
+{
+    int left = 9;
+    BrokerResolver::setIfMore(left, 5);
+    EXPECT_EQ(left, 9);
+}
+
+TEST(BrokerResolver, DataCollection)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+    auto data = resolver.getDataCollection();
+
+    auto iterator = data.find({"dir", 1234});
+    ASSERT_NE(iterator, data.cend());
+
+    EXPECT_EQ(iterator->second.files, 3);
+    EXPECT_EQ(iterator->second.lastDate,"20181010");
+}
+
+TEST(BrokerResolver, DataCollectionNested)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+    auto data = resolver.getDataCollection();
+
+    auto iterator = data.find({"dir nested_dir", 1234});
+    ASSERT_NE(iterator, data.cend());
+
+    EXPECT_EQ(iterator->second.files, 1);
+    EXPECT_EQ(iterator->second.lastDate,"20181005");
+}
+
+TEST(BrokerResolver, DataCollectionSymlink)
+{
+    BrokerResolver resolver{};
+    resolver.resolve("../tests/data");
+    auto data = resolver.getDataCollection();
+
+    auto iterator = data.find({"new_dir", 1234});
+    ASSERT_NE(iterator, data.cend());
+
+    EXPECT_EQ(iterator->second.files, 3);
+    EXPECT_EQ(iterator->second.lastDate,"20181010");
 }
