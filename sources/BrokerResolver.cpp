@@ -55,5 +55,5 @@ void BrokerResolver::resolve(const boost::filesystem::path &path)
 }
 
 boost::regex BrokerResolver::filenameChecker{
-    R"((\w+)_(\d{8})_([12]\d{3}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])).(\w+))"
+    R"((\w+)_(\d{8})_([12]\d{3}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])).txt)"
 };

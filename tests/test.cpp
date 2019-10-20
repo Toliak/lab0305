@@ -48,13 +48,37 @@ TEST(BrokerDataPair, Hash)
     EXPECT_NE(hash, 0);
 }
 
-TEST(BrokerResolver, GetFiles)
+TEST(BrokerResolver, SetIfMoreBad)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
+    int left = 9;
+    BrokerResolver::setIfMore(left, 5);
+    EXPECT_EQ(left, 9);
+}
 
-    auto files = resolver.getFileCollection();
+TEST(BrokerResolver, SetIfMore)
+{
+    int left = 9;
+    BrokerResolver::setIfMore(left, 10);
+    EXPECT_EQ(left, 10);
+}
 
+class BrokerResolverFixture: public ::testing::Test
+{
+protected:
+    BrokerResolver resolver;
+    BrokerResolver::DataCollection data;
+    BrokerResolver::Collection files;
+
+    void SetUp() override
+    {
+        resolver.resolve("../tests/data");
+        files = resolver.getFileCollection();
+        data = resolver.getDataCollection();
+    }
+};
+
+TEST_F(BrokerResolverFixture, GetFiles)
+{
     EXPECT_NE(
         std::find(
             files.cbegin(),
@@ -79,13 +103,8 @@ TEST(BrokerResolver, GetFiles)
     );
 }
 
-TEST(BrokerResolver, GetFilesNestedDir)
+TEST_F(BrokerResolverFixture, GetFilesNestedDir)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-
-    auto files = resolver.getFileCollection();
-
     EXPECT_NE(
         std::find(
             files.cbegin(),
@@ -99,13 +118,8 @@ TEST(BrokerResolver, GetFilesNestedDir)
     );
 }
 
-TEST(BrokerResolver, GetFilesSymlinkFile)
+TEST_F(BrokerResolverFixture, GetFilesSymlinkFile)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-
-    auto files = resolver.getFileCollection();
-
     EXPECT_NE(
         std::find(
             files.cbegin(),
@@ -119,13 +133,8 @@ TEST(BrokerResolver, GetFilesSymlinkFile)
     );
 }
 
-TEST(BrokerResolver, GetFilesSymlinkDir)
+TEST_F(BrokerResolverFixture, GetFilesSymlinkDir)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-
-    auto files = resolver.getFileCollection();
-
     EXPECT_NE(
         std::find(
             files.cbegin(),
@@ -136,6 +145,7 @@ TEST(BrokerResolver, GetFilesSymlinkDir)
             }
         ),
         files.cend()
+
     );
     EXPECT_NE(
         std::find(
@@ -150,13 +160,8 @@ TEST(BrokerResolver, GetFilesSymlinkDir)
     );
 }
 
-TEST(BrokerResolver, GetFilesNoOld)
+TEST_F(BrokerResolverFixture, GetFilesNoOld)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-
-    auto files = resolver.getFileCollection();
-
     EXPECT_EQ(
         std::find(
             files.cbegin(),
@@ -181,26 +186,9 @@ TEST(BrokerResolver, GetFilesNoOld)
     );
 }
 
-TEST(BrokerResolver, SetIfMore)
-{
-    int left = 9;
-    BrokerResolver::setIfMore(left, 10);
-    EXPECT_EQ(left, 10);
-}
 
-TEST(BrokerResolver, SetIfMoreBad)
+TEST_F(BrokerResolverFixture, DataCollection)
 {
-    int left = 9;
-    BrokerResolver::setIfMore(left, 5);
-    EXPECT_EQ(left, 9);
-}
-
-TEST(BrokerResolver, DataCollection)
-{
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-    auto data = resolver.getDataCollection();
-
     auto iterator = data.find({"dir", 1234});
     ASSERT_NE(iterator, data.cend());
 
@@ -208,12 +196,8 @@ TEST(BrokerResolver, DataCollection)
     EXPECT_EQ(iterator->second.lastDate,"20181010");
 }
 
-TEST(BrokerResolver, DataCollectionNested)
+TEST_F(BrokerResolverFixture, DataCollectionNested)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-    auto data = resolver.getDataCollection();
-
     auto iterator = data.find({"dir nested_dir", 1234});
     ASSERT_NE(iterator, data.cend());
 
@@ -221,15 +205,26 @@ TEST(BrokerResolver, DataCollectionNested)
     EXPECT_EQ(iterator->second.lastDate,"20181005");
 }
 
-TEST(BrokerResolver, DataCollectionSymlink)
+TEST_F(BrokerResolverFixture, DataCollectionSymlink)
 {
-    BrokerResolver resolver{};
-    resolver.resolve("../tests/data");
-    auto data = resolver.getDataCollection();
-
     auto iterator = data.find({"new_dir", 1234});
     ASSERT_NE(iterator, data.cend());
 
     EXPECT_EQ(iterator->second.files, 3);
     EXPECT_EQ(iterator->second.lastDate,"20181010");
+}
+
+TEST_F(BrokerResolverFixture, DataCollectionWrongExtension)
+{
+    EXPECT_EQ(
+        std::find(
+            files.cbegin(),
+            files.cend(),
+            BrokerFile{
+                "balance_00001459_20191011.yml",
+                {"dir", "nested_dir"}
+            }
+        ),
+        files.cend()
+    );
 }
