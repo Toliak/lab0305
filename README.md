@@ -1,8 +1,7 @@
 [![Build Status](https://travis-ci.com/Toliak/lab0305.svg?branch=master)](https://travis-ci.com/Toliak/lab0305)
+[![coverage](https://gitlab.toliak.ru/bmstu-cpp-3-sem/lab0305/badges/master/pipeline.svg)](https://gitlab.toliak.ru/bmstu-cpp-3-sem/lab0305/pipelines)
 ![Code size](https://img.shields.io/github/languages/code-size/Toliak/lab0305.svg)
 ![GitHub Repo size](https://img.shields.io/github/repo-size/Toliak/lab0305.svg)
-![Some badge](https://img.shields.io/badge/toliak-purple-purple.svg)
-![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)
 
 # Лабораторная работа №5
 
