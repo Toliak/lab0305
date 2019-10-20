@@ -4,4 +4,4 @@
 
 set -ex
 cd .build/
-valgrind .build/tests
+valgrind tests
